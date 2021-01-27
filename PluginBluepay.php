@@ -9,7 +9,8 @@ require_once 'modules/admin/models/GatewayPlugin.php';
 */
 class PluginBluepay extends GatewayPlugin
 {
-    function getVariables() {
+    function getVariables()
+    {
         /* Specification
               itemkey     - used to identify variable in your other functions
               type        - text,textarea,yesno,password,hidden ( hiddens are not visable to the user )
@@ -64,7 +65,7 @@ class PluginBluepay extends GatewayPlugin
                                        ),
                    lang("Invoice After Signup") => array (
                                         "type"        =>"yesno",
-                                        "description" =>lang("Select YES if you want an invoice sent to the customer after signup is complete."),
+                                        "description" =>lang("Select YES if you want an invoice sent to the client after signup is complete."),
                                         "value"       =>"1"
                                        ),
                    lang("Signup Name") => array (
@@ -74,7 +75,7 @@ class PluginBluepay extends GatewayPlugin
                                        ),
                    lang("Dummy Plugin") => array (
                                         "type"        =>"hidden",
-                                        "description" =>lang("1 = Only used to specify a billing type for a customer. 0 = full fledged plugin requiring complete functions"),
+                                        "description" =>lang("1 = Only used to specify a billing type for a client. 0 = full fledged plugin requiring complete functions"),
                                         "value"       =>"0"
                                        ),
                    lang("Auto Payment") => array (
@@ -95,7 +96,8 @@ class PluginBluepay extends GatewayPlugin
     // function plugin_bluepay_singlepayment($params) - required function
     /*****************************************************************/
     function singlepayment($params)
-    { // when set to non recurring
+    {
+ // when set to non recurring
         //Function used to provide users with the ability
         //Plugin variables can be accesses via $params["plugin_[pluginname]_[variable]"] (ex. $params["plugin_paypal_UserID"])
         return $this->autopayment($params);
@@ -116,21 +118,37 @@ class PluginBluepay extends GatewayPlugin
         }
         $bluePay = new BluePayment($params['plugin_bluepay_BluePay Account ID'], $params['plugin_bluepay_BluePay Secret Key'], $mode);
         $bluePay->sale($params['invoiceTotal']);
-        $bluePay->setCustInfo($params["userCCNumber"],$params["userCCCVV2"],$params["userCCExp"],$params['userFirstName'],$params['userLastName'],
-            $params['userAddress'],$params['userCity'],$params['userState'],$params['userZipcode'],$params['userCountry'],
-            $params['userPhone'], $params['userEmail'], null, $params['invoiceDescription']);
+        $bluePay->setCustInfo(
+            $params["userCCNumber"],
+            $params["userCCCVV2"],
+            $params["userCCExp"],
+            $params['userFirstName'],
+            $params['userLastName'],
+            $params['userAddress'],
+            $params['userCity'],
+            $params['userState'],
+            $params['userZipcode'],
+            $params['userCountry'],
+            $params['userPhone'],
+            $params['userEmail'],
+            null,
+            $params['invoiceDescription']
+        );
         $bluePay->process();
 
-        if ($params['isSignup']==1){
+        if ($params['isSignup']==1) {
             $bolInSignup = true;
-        }else{
+        } else {
             $bolInSignup = false;
         }
         include('plugins/gateways/bluepay/callback.php');
         //Return error code
         $tReturnValue = "";
-        if (($bluePay->getStatus()==1)||($bluePay->getStatus()=='*1*')){ $tReturnValue = ""; }
-        else { $tReturnValue = $bluePay->getMessage()." Code:".$bluePay->getStatus(); }
+        if (($bluePay->getStatus()==1)||($bluePay->getStatus()=='*1*')) {
+            $tReturnValue = "";
+        } else {
+            $tReturnValue = $bluePay->getMessage()." Code:".$bluePay->getStatus();
+        }
         return $tReturnValue;
     }
 
@@ -146,26 +164,38 @@ class PluginBluepay extends GatewayPlugin
         }
         $bluePay = new BluePayment($params['plugin_bluepay_BluePay Account ID'], $params['plugin_bluepay_BluePay Secret Key'], $mode);
         $bluePay->refund($params['invoiceRefundTransactionId']);
-        $bluePay->setCustInfo($params["userCCNumber"],"",$params["userCCExp"],$params['userFirstName'],$params['userLastName'],
-            $params['userAddress'],$params['userCity'],$params['userState'],$params['userZipcode'],$params['userCountry'],
-            $params['userPhone'], $params['userEmail'], null, $params['invoiceDescription']);
+        $bluePay->setCustInfo(
+            $params["userCCNumber"],
+            "",
+            $params["userCCExp"],
+            $params['userFirstName'],
+            $params['userLastName'],
+            $params['userAddress'],
+            $params['userCity'],
+            $params['userState'],
+            $params['userZipcode'],
+            $params['userCountry'],
+            $params['userPhone'],
+            $params['userEmail'],
+            null,
+            $params['invoiceDescription']
+        );
         $bluePay->process();
 
-        if ($params['isSignup']==1){
+        if ($params['isSignup']==1) {
             $bolInSignup = true;
-        }else{
+        } else {
             $bolInSignup = false;
         }
         include('plugins/gateways/bluepay/callback.php');
 
         //Return error code
 
-        if($bluePay->getStatus() == 1
-          || $bluePay->getStatus() == '*1*'){
+        if ($bluePay->getStatus() == 1
+          || $bluePay->getStatus() == '*1*') {
             return array('AMOUNT' => $params['invoiceTotal']);
-        }else{
+        } else {
             return  $bluePay->getMessage()." Code:".$bluePay->getStatus();
         }
     }
 }
-?>
